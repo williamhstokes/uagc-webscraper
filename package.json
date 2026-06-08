@@ -1,0 +1,26 @@
+{
+  "name": "uagc-webscraper",
+  "version": "1.5.0",
+  "description": "Accuracy-first dashboard and backend crawler for scanning published UAGC site pages for targeted content.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js",
+    "check": "node --check server.js && node --check public/app.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "web-scraper",
+    "crawler",
+    "dashboard",
+    "canvas",
+    "uagc",
+    "seo",
+    "accessibility"
+  ],
+  "author": "UAGC Web Development",
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UAGC WebScraper</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <img class="brand-logo" src="/assets/uagc-logo.png" alt="The University of Arizona Global Campus" />
+          <div class="brand-divider"></div>
+          <div>
+            <h1>UAGC WebScraper</h1>
+            <p>Scan all published pages for targeted content across the site</p>
+          </div>
+        </div>
+        <div class="canvas-pill" aria-label="Digital Experience Team badge">
+          <span>◒</span>
+          Digital Experience Team
+        </div>
+      </header>
+
+      <main>
+        <section class="control-card" aria-labelledby="setup-heading">
+          <div class="control-grid">
+            <div class="field-block url-block">
+              <label id="setup-heading" for="startUrl">Start URL <span aria-hidden="true">🌐</span></label>
+              <input id="startUrl" type="url" value="https://www.uagc.edu" placeholder="https://www.uagc.edu" />
+            </div>
+
+            <div class="field-block scope-block">
+              <span class="field-label">Crawl Scope</span>
+              <div class="segmented" role="radiogroup" aria-label="Crawl scope">
+                <button class="segment active" data-scope="all" type="button">All Published Pages</button>
+                <button class="segment" data-scope="subdirectory" type="button">Subdirectory Only</button>
+                <label class="segment check-segment">
+                  <input id="includeExternalPdfs" type="checkbox" />
+                  Include External PDFs
+                </label>
+              </div>
+            </div>
+
+            <div class="field-block advanced-block">
+              <span class="field-label">Engine</span>
+              <div class="engine-row">
+                <label>Workers <input id="workerCount" type="number" min="1" max="64" value="12" /></label>
+              </div>
+              <p class="hint-line"><span>🛡</span> No URL scan limit <span>✓</span> Accuracy-first balanced crawl engine</p>
+            </div>
+
+            <div class="action-block">
+              <button id="startBtn" class="btn btn-primary" type="button"><span>▶</span> Start Scan</button>
+              <button id="pauseBtn" class="btn btn-outline" type="button" disabled><span>Ⅱ</span> Pause</button>
+              <button id="resumeBtn" class="btn btn-outline" type="button" disabled><span>▶</span> Resume</button>
+              <button id="cancelBtn" class="btn btn-outline btn-danger-outline" type="button" disabled><span>×</span> Cancel Scan</button>
+              <button id="downloadProgressTop" class="btn btn-outline" type="button" disabled><span>⇩</span> Download Progress</button>
+            </div>
+          </div>
+          <div id="alert" class="alert" role="status" hidden></div>
+        </section>
+
+        <section class="filters-panel" aria-labelledby="filters-heading">
+          <div class="panel-heading">
+            <div>
+              <h2 id="filters-heading">⌁ Content Type Filters</h2>
+              <p>Select content types and configure detail options to target specific content across the site.</p>
+            </div>
+            <button id="selectAllBtn" class="link-button" type="button">☑ Select All</button>
+          </div>
+
+          <div class="filters-grid">
+            <article class="filter-card tall" data-filter="term">
+              <label class="filter-title"><input data-enabled type="checkbox" /> <span>T</span> Term</label>
+              <textarea data-query placeholder="Terms to find, one per line or comma separated"></textarea>
+              <label><input data-option="exactMatch" type="checkbox" /> Exact match</label>
+              <label><input data-option="caseSensitive" type="checkbox" /> Case sensitive</label>
+              <label><input data-option="stemming" type="checkbox" /> Stemming</label>
+            </article>
+
+            <article class="filter-card tall" data-filter="phrase">
+              <label class="filter-title"><input data-enabled type="checkbox" /> <span>”</span> Phrase</label>
+              <textarea data-query placeholder="Phrases to find, one per line"></textarea>
+              <label><input data-option="exactPhrase" type="checkbox" /> Exact phrase</label>
+              <label><input data-option="partialPhrase" type="checkbox" /> Partial phrase</label>
+              <label><input data-option="proximity" type="checkbox" /> Proximity</label>
+            </article>
+
+            <article class="filter-card" data-filter="images">
+              <label class="filter-title"><input data-enabled type="checkbox" /> <span>▧</span> Images</label>
+              <label><input data-option="jpeg" type="checkbox" /> JPEG</label>
+              <label><input data-option="png" type="checkbox" /> PNG</label>
+              <label><input data-option="webp" type="checkbox" /> WebP</label>
+              <label><input data-option="svg" type="checkbox" /> SVG</label>
+              <label><input data-option="gif" type="checkbox" /> GIF</label>
+              <label><input data-option="altText" type="checkbox" /> Alt text</label>
+              <label><input data-option="missingAlt" type="checkbox" /> Missing alt</label>
+            </article>
+
+            <article class="filter-card" data-filter="videos">
+              <label class="filter-title"><input data-enabled type="checkbox" /> <span>▷</span> Videos</label>
+              <label><input data-option="youtubeEmbed" type="checkbox" /> YouTube embed</label>
+              <label><input data-option="html5Video" type="checkbox" /> HTML5 video</label>
+              <label><input data-option="transcript" type="checkbox" /> Transcript</label>
+              <label><input data-option="captions" type="checkbox" /> Captions</label>
+            </article>
+
+            <article class="filter-card" data-filter="pdf">
+              <label class="filter-title"><input data-enabled type="checkbox" /> <span>▤</span> PDF</label>
+              <label><input data-option="linkedPdfs" type="checkbox" /> Linked PDFs</label>
+              <label><input data-option="embeddedPdfs" type="checkbox" /> Embedded PDFs</label>
+              <label><input data-option="downloadablePdfs" type="checkbox" /> Downloadable PDFs</label>
+              <label><input data-option="fileSize" type="checkbox" /> File size</label>
+            </article>
+
+            <article class="filter-card" data-filter="links">
+              <label class="filter-title"><input data-enabled type="checkbox" /> <span>⛓</span> Links</label>
+              <label><input data-option="internal" type="checkbox" /> Internal</label>
+              <label><input data-option="external" type="checkbox" /> External</label>
+              <label><input data-option="brokenLinks" type="checkbox" /> Broken links</label>
+            </article>
+
+            <article class="filter-card" data-filter="metadata">
+              <label class="filter-title"><input data-enabled type="checkbox" /> <span>◇</span> Metadata</label>
+              <label><input data-option="titleTag" type="checkbox" /> Title tag</label>
+              <label><input data-option="metaDescription" type="checkbox" /> Meta description</label>
+              <label><input data-option="canonical" type="checkbox" /> Canonical</label>
+              <label><input data-option="robots" type="checkbox" /> Robots</label>
+              <label><input data-option="openGraph" type="checkbox" /> Open Graph / Social</label>
+            </article>
+
+            <article class="filter-card" data-filter="forms">
+              <label class="filter-title"><input data-enabled type="checkbox" /> <span>▣</span> Forms</label>
+              <label><input data-option="inquiryForm" type="checkbox" /> Inquiry form</label>
+              <label><input data-option="leadForm" type="checkbox" /> Lead form</label>
+              <label><input data-option="applicationForm" type="checkbox" /> Application form</label>
+              <label><input data-option="allForms" type="checkbox" /> All forms</label>
+            </article>
+
+            <article class="filter-card" data-filter="accessibility">
+              <label class="filter-title"><input data-enabled type="checkbox" /> <span>♿</span> Accessibility</label>
+              <label><input data-option="emptyHeadings" type="checkbox" /> Empty headings</label>
+              <label><input data-option="duplicateIds" type="checkbox" /> Duplicate IDs</label>
+              <label><input data-option="missingLabels" type="checkbox" /> Unlabeled inputs</label>
+            </article>
+
+            <article class="filter-card" data-filter="seo">
+              <label class="filter-title"><input data-enabled type="checkbox" /> <span>◎</span> SEO</label>
+              <label><input data-option="missingTitle" type="checkbox" /> Missing title</label>
+              <label><input data-option="missingMetaDescription" type="checkbox" /> Missing meta description</label>
+              <label><input data-option="noindex" type="checkbox" /> Noindex</label>
+              <label><input data-option="missingCanonical" type="checkbox" /> Missing canonical</label>
+            </article>
+
+          </div>
+        </section>
+
+        <section class="progress-card" aria-labelledby="progress-heading">
+          <h2 id="progress-heading" class="sr-only">Scan progress</h2>
+          <canvas id="progressCanvas" width="1600" height="260">Scan progress dashboard</canvas>
+          <div class="canvas-control-strip">
+            <span id="liveStatusDot" class="dot idle"></span>
+            <span id="liveStatusText">Ready to scan</span>
+            <button id="pauseCanvasBtn" type="button" disabled>Ⅱ Pause Scan</button>
+          </div>
+        </section>
+
+        <section class="lower-grid">
+          <article class="data-card preview-card">
+            <div class="card-head">
+              <h2>▧ Matched Content Preview</h2>
+              <button id="downloadCsvInline" type="button" class="link-button" disabled>Download Editable CSV →</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Page URL</th>
+                    <th>Content Type</th>
+                    <th>Match Detail</th>
+                    <th>Context</th>
+                  </tr>
+                </thead>
+                <tbody id="resultsBody">
+                  <tr><td colspan="4" class="empty">No matches yet. Start a scan and the little data lanterns will appear here.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p id="resultSummary" class="subtle">Showing 0 matching results. After matches appear, click preview cells to edit CSV values.</p>
+            <p class="edit-hint">Editable CSV mode: click any visible result cell, update the text, then save edits before export. The downloaded CSV keeps the same columns.</p>
+          </article>
+
+          <article class="data-card recent-card">
+            <div class="card-head">
+              <h2>◷ Recent Matches</h2>
+              <span id="recentCount" class="mini-link">0 found</span>
+            </div>
+            <ul id="recentList" class="activity-list">
+              <li class="empty">Recent matches will stream in live.</li>
+            </ul>
+          </article>
+
+          <article class="data-card queue-card">
+            <div class="card-head">
+              <h2>☷ Scan Queue</h2>
+              <span id="queueCount" class="mini-link">0 URLs</span>
+            </div>
+            <ol id="queueList" class="queue-list">
+              <li class="empty">Queue is waiting for launch.</li>
+            </ol>
+          </article>
+
+          <article class="data-card export-card">
+            <div class="card-head">
+              <h2>⇪ Export & Download</h2>
+            </div>
+            <div class="download-box">
+              <span>On completion:</span>
+              <strong>Download Editable CSV</strong>
+              <label class="filename-label" for="csvFileName">CSV file name</label>
+              <input id="csvFileName" class="filename-input" type="text" value="UAGC_webscrape_MM_DD_YY.csv" aria-label="CSV file name" />
+            </div>
+            <p>You can download scan progress while the scan runs. When ready, review edits and choose the CSV file name before download.</p>
+            <button id="downloadProgressCard" class="btn btn-primary full" type="button" disabled>⇩ Download Progress Now</button>
+            <button id="saveCsvEditsBtn" class="btn btn-outline full" type="button" disabled>Save CSV Edits</button>
+            <button id="downloadCsvCard" class="btn btn-outline full" type="button" disabled>Download Editable CSV</button>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js?v=1.5" type="module"></script>
+  </body>
+</html>
